@@ -1,0 +1,8 @@
+967ea0411bd39fee6a6fb2ae5c3f2512 *DESCRIPTION
+ca70d29fe840bebca2e65fb584553d61 *LICENSE
+6663e284ad2a119bbe82b54f6f698511 *NAMESPACE
+1938ce1676ab5e52848c933e3c65774b *R/cluster_vcov.r
+d120b9c4f5a3aa1a3bef66e97e812bed *R/petersen.r
+03f34365b781bc29ebb5aacfd11fcd96 *data/petersen.rda
+1241118d2e0c333cff6cff9d4d21d233 *man/cluster.vcov.Rd
+919cd943e318ac26c5ddee7895a3c90c *man/petersen.Rd
