@@ -4,33 +4,37 @@
 \title{Multi-way standard error clustering}
 \usage{
 cluster.vcov(model, cluster, parallel = FALSE, use_white = NULL,
-  df_correction = TRUE, leverage = FALSE, debug = FALSE)
+  df_correction = TRUE, leverage = FALSE, force_posdef = FALSE,
+  debug = FALSE)
 }
 \arguments{
-\item{model}{The estimated model, usually an lm or glm class object}
+\item{model}{The estimated model, usually an \code{lm} or \code{glm} class object}
 
-\item{cluster}{A vector, matrix, or data.frame of cluster variables,
-where each column is a separate variable.  If the vector 1:nrow(data)
+\item{cluster}{A \code{vector}, \code{matrix}, or \code{data.frame} of cluster variables,
+where each column is a separate variable.  If the vector \code{1:nrow(data)}
 is used, the function effectively produces a regular
 heteroskedasticity-robust matrix.}
 
 \item{parallel}{Scalar or list.  If a list, use the list as a list
 of connected processing cores/clusters.  A scalar indicates no
-parallelization.  See the parallel package.}
+parallelization.  See the \bold{parallel} package.}
 
-\item{use_white}{Logical or NULL.  See description below.}
+\item{use_white}{\code{Logical} or \code{NULL}.  See description below.}
 
-\item{df_correction}{Logical or vector.  TRUE computes degrees
-of freedom corrections, FALSE uses no corrections.  A vector of length
+\item{df_correction}{\code{Logical} or \code{vector}.  \code{TRUE} computes degrees
+of freedom corrections, \code{FALSE} uses no corrections.  A vector of length
 \eqn{2^D - 1} will directly set the degrees of freedom corrections.}
 
 \item{leverage}{Integer. EXPERIMENTAL Uses Mackinnon-White HC3-style leverage
 adjustments.  Known to work in the non-clustering case,
-e.g., it reproduces HC3 if df_correction=FALSE.  Set to 3 for HC3-style
+e.g., it reproduces HC3 if \code{df_correction=FALSE}.  Set to 3 for HC3-style
 and 2 for HC2-style leverage adjustments.}
 
-\item{debug}{Logical.  Print internal values useful for debugging to
+\item{debug}{\code{Logical}.  Print internal values useful for debugging to
 the console.}
+
+\item{force_posdef}{\code{Logical}.  Force the eigenvalues of the variance-covariance
+matrix to be positive.}
 }
 \value{
 a \eqn{k} x \eqn{k} variance-covariance matrix of type 'matrix'
@@ -48,7 +52,7 @@ number of cluster variables are added, and those with an even
 number are subtracted.
 
 The cluster variable(s) are specified by passing the entire variable(s)
-to cluster (cbind()'ed as necessary).  The cluster variables should
+to cluster (\code{cbind()}'ed as necessary).  The cluster variables should
 be of the same number of rows as the original data set; observations
 omitted or excluded in the model estimation will be handled accordingly.
 
@@ -58,25 +62,33 @@ dimensions U results in a single observation per group in U;
 e.g., if clustering by firm and year, there is only one observation
 per firm-year, we subtract the White (1980) HC0 variance-covariance
 from the sum of the firm and year vcov matrices.  This is detected
-automatically (if use_white = NULL), but you can force this one way
-or the other by setting use_white = TRUE or FALSE.
+automatically (if \code{use_white = NULL}), but you can force this one way
+or the other by setting \code{use_white = TRUE} or \code{FALSE}.
 
 Some authors suggest avoiding degrees of freedom corrections with
 multi-way clustering.  By default, the function uses corrections
 identical to Petersen (2009) corrections.  Passing a numerical
-vector to df_correction (of length \eqn{2^D - 1}) will override
-the default, and setting df_correction = FALSE will use no correction.
+vector to \code{df_correction} (of length \eqn{2^D - 1}) will override
+the default, and setting \code{df_correction = FALSE} will use no correction.
+
+Cameron, Gelbach, & Miller (2011) futher suggest a method for forcing
+the variance-covariance matrix to be positive semidefinite by correcting
+the eigenvalues of the matrix.  To use this method, set \code{force_posdef = TRUE}.
+Do not use this method unless absolutely necessary!  The eigen/spectral
+decomposition used is not ideal numerically, and may introduce small
+errors or deviations.  If \code{force_posdef = TRUE}, the correction is applied
+regardless of whether it's necessary.
 
 The defaults deliberately match the Stata default output for one-way and
 Mitchell Petersen's two-way Stata code results.  To match the
 SAS default output (obtained using the class & repeated subject
-statements) simply turn off the degrees of freedom correction.
+statements, see Arellano (1987)) simply turn off the degrees of freedom correction.
 
-Parallelization is available via the parallel package by passing
-the "cluster" list (usually called cl) to the parallel argument.
+Parallelization is available via the \bold{parallel} package by passing
+the "cluster" list (usually called \code{cl}) to the parallel argument.
 }
 \examples{
-require(lmtest)
+library(lmtest)
 data(petersen)
 m1 <- lm(y ~ x, data = petersen)
 
@@ -125,15 +137,23 @@ coeftest(m1, vcov_both)
 Nathaniel Graham \email{npgraham1@gmail.com}
 }
 \references{
-Cameron, A. C., Gelbach, J. B., & Miller, D. L. (2011). Robust inference with multiway clustering. Journal of Business & Economic Statistics, 29(2).
+Arellano, M. (1987). PRACTITIONERS' CORNER: Computing Robust Standard Errors for
+Within-groups Estimators. Oxford bulletin of Economics and Statistics, 49(4), 431-434.
 
-Ma, Mark (Shuai), Are We Really Doing What We Think We Are Doing? A Note on Finite-Sample Estimates of Two-Way Cluster-Robust Standard Errors (April 9, 2014).
+Cameron, A. C., Gelbach, J. B., & Miller, D. L. (2011). Robust inference with multiway
+clustering. Journal of Business & Economic Statistics, 29(2).
 
-MacKinnon, J. G., & White, H. (1985). Some heteroskedasticity-consistent covariance matrix estimators with improved finite sample properties. Journal of Econometrics, 29(3), 305-325.
+Ma, Mark (Shuai), Are We Really Doing What We Think We Are Doing? A Note on Finite-Sample
+Estimates of Two-Way Cluster-Robust Standard Errors (April 9, 2014).
 
-Petersen, M. A. (2009). Estimating standard errors in finance panel data sets: Comparing approaches. Review of financial studies, 22(1), 435-480.
+MacKinnon, J. G., & White, H. (1985). Some heteroskedasticity-consistent covariance matrix
+estimators with improved finite sample properties. Journal of Econometrics, 29(3), 305-325.
 
-White, H. (1980). A heteroskedasticity-consistent covariance matrix estimator and a direct test for heteroskedasticity. Econometrica: Journal of the Econometric Society, 817-838.
+Petersen, M. A. (2009). Estimating standard errors in finance panel data sets: Comparing
+approaches. Review of financial studies, 22(1), 435-480.
+
+White, H. (1980). A heteroskedasticity-consistent covariance matrix estimator and a direct
+test for heteroskedasticity. Econometrica: Journal of the Econometric Society, 817-838.
 }
 \keyword{clustering}
 \keyword{errors}

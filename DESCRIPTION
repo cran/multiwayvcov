@@ -1,23 +1,25 @@
 Package: multiwayvcov
 Type: Package
 Title: Multi-way standard error clustering
-Version: 1.0.4
-Date: 2014-07-01
-Author: Nathaniel Graham and Mahmood Arai
+Version: 1.2.0
+Date: 2014-09-05
+Author: Nathaniel Graham and Mahmood Arai and Bj<c3><b6>rn Hagstr<c3><b6>mer
 Maintainer: Nathaniel Graham <npgraham1@gmail.com>
 Depends: R (>= 3.0.0)
-Imports: sandwich
+Imports: sandwich, boot
 Suggests: parallel, lmtest
 URL: http://sites.google.com/site/npgraham1/code
 LazyData: no
-Description: This package exports one function cluster.vcov, which implements
+Description: This package exports two functions cluster.vcov, which implements
     multi-way clustering using the method suggested by Cameron, Gelbach, &
-    Miller (2011).  Normal one and two-way clustering matches the results of
-    other common statistical packages.  Missing values are handled
-    transparently and rudimentary parallelization support is provided.
+    Miller (2011) and cluster.boot, which implements cluster (or block)
+    bootstrapping for estimating variance-covariance matrices. Normal one and
+    two-way clustering matches the results of other common statistical
+    packages.  Missing values are handled transparently and rudimentary
+    parallelization support is provided.
 License: BSD_2_clause + file LICENSE
 ByteCompile: yes
-Packaged: 2014-07-01 19:48:53 UTC; npgraham
+Packaged: 2014-09-06 02:19:36 UTC; npgraham
 NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2014-07-02 10:22:28
+Date/Publication: 2014-09-06 08:15:37
