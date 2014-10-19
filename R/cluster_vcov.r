@@ -11,17 +11,17 @@
 #' @param parallel Scalar or list.  If a list, use the list as a list
 #' of connected processing cores/clusters.  A scalar indicates no
 #' parallelization.  See the \bold{parallel} package.
-#' @param use_white \code{Logical} or \code{NULL}.  See description below.
-#' @param df_correction \code{Logical} or \code{vector}.  \code{TRUE} computes degrees
+#' @param use_white Logical or \code{NULL}.  See description below.
+#' @param df_correction Logical or \code{vector}.  \code{TRUE} computes degrees
 #' of freedom corrections, \code{FALSE} uses no corrections.  A vector of length
 #' \eqn{2^D - 1} will directly set the degrees of freedom corrections.
 #' @param leverage Integer. EXPERIMENTAL Uses Mackinnon-White HC3-style leverage
 #' adjustments.  Known to work in the non-clustering case, 
 #' e.g., it reproduces HC3 if \code{df_correction=FALSE}.  Set to 3 for HC3-style
 #' and 2 for HC2-style leverage adjustments.
-#' @param debug \code{Logical}.  Print internal values useful for debugging to 
+#' @param debug Logical.  Print internal values useful for debugging to 
 #' the console.
-#' @param force_posdef \code{Logical}.  Force the eigenvalues of the variance-covariance
+#' @param force_posdef Logical.  Force the eigenvalues of the variance-covariance
 #' matrix to be positive.
 #'
 #' @keywords clustering multi-way robust standard errors
@@ -96,6 +96,7 @@
 #' test for heteroskedasticity. Econometrica: Journal of the Econometric Society, 817-838.
 #' 
 #' @importFrom sandwich estfun meatHC sandwich
+#' @importFrom parallel clusterExport parApply
 #' 
 #' @examples
 #' library(lmtest)
