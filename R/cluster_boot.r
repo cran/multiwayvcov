@@ -60,6 +60,10 @@
 #' and sum those is mathematically irrelevant, but may lead to (very) minor numerical
 #' differences.
 #' 
+#' Instead of passing in a vector, matrix, data.frame, etc, to specify the cluster variables,
+#' you can use a formula to specify which variables from the
+#' original data frame to use as cluster variables, e.g., \code{~ firmid + year}.
+#' 
 #' Unlike the \code{cluster.vcov} function, this function does not depend upon the \code{estfun}
 #' function from the \bold{sandwich} package, although it does make use of the \code{vcovHC}
 #' function for computing White HC0 variance-covariance matrices. 
@@ -90,6 +94,8 @@
 #' @importFrom boot boot
 #' @importFrom compiler cmpfun
 #' @importFrom parallel clusterExport
+#' @importFrom stats coef cov model.frame residuals formula rnorm fitted update.formula
+#' @importFrom utils combn
 #' 
 #' @examples
 #' \dontrun{
@@ -99,6 +105,10 @@
 #' 
 #' # Cluster by firm
 #' boot_firm <- cluster.boot(m1, petersen$firmid)
+#' coeftest(m1, boot_firm)
+#' 
+#' # Cluster by firm using a formula
+#' boot_firm <- cluster.boot(m1, ~ firmid)
 #' coeftest(m1, boot_firm)
 #' 
 #' # Cluster by year
@@ -132,7 +142,13 @@ cluster.boot <- function(model, cluster, parallel = FALSE, use_white = NULL,
                          force_posdef = FALSE, R = 300, boot_type = "xy", wild_type = "rademacher",
                          debug = FALSE) {
   
-  cluster <- as.data.frame(cluster)
+  if(inherits(cluster, "formula")) {
+    cluster_tmp <- expand.model.frame(model, cluster, na.expand = TRUE)
+    cluster <- model.frame(cluster, cluster_tmp)
+  } else {
+    cluster <- as.data.frame(cluster, stringsAsFactors = FALSE)
+  }
+  
   cluster_dims <- ncol(cluster)
   
   # total cluster combinations, 2^D - 1
@@ -162,6 +178,11 @@ cluster.boot <- function(model, cluster, parallel = FALSE, use_white = NULL,
     cluster <- as.data.frame(cluster)  # silly error somewhere
   }
   if(debug) print(class(cluster))
+  
+  # Factors in our clustering variables can potentially cause problems
+  # Blunt fix is to force conversion to characters
+  i <- !sapply(cluster, is.numeric)
+  cluster[i] <- lapply(cluster[i], as.character)
   
   # Make all combinations of cluster dimensions
   if(cluster_dims > 1) {

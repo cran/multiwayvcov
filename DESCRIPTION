@@ -2,12 +2,12 @@ Encoding: UTF-8
 Package: multiwayvcov
 Type: Package
 Title: Multi-way Standard Error Clustering
-Version: 1.2.1
-Date: 2014-10-19
+Version: 1.2.2
+Date: 2015-09-25
 Author: Nathaniel Graham and Mahmood Arai and Björn Hagströmer
 Maintainer: Nathaniel Graham <npgraham1@gmail.com>
 Depends: R (>= 3.0.0)
-Imports: sandwich, boot, compiler, parallel
+Imports: sandwich, boot, compiler, parallel, stats, utils
 Suggests: lmtest
 URL: http://sites.google.com/site/npgraham1/research/code
 LazyData: no
@@ -20,7 +20,7 @@ Description: Exports two functions implementing
     parallelization support is provided.
 License: BSD_2_clause + file LICENSE
 ByteCompile: yes
-Packaged: 2014-10-20 07:59:39 UTC; npgraham
 NeedsCompilation: no
+Packaged: 2015-09-25 02:43:12 UTC; npgraham
 Repository: CRAN
-Date/Publication: 2014-10-20 10:30:20
+Date/Publication: 2015-09-25 13:57:25

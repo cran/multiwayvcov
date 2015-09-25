@@ -7,7 +7,8 @@
 #' @param cluster A \code{vector}, \code{matrix}, or \code{data.frame} of cluster variables,
 #' where each column is a separate variable.  If the vector \code{1:nrow(data)}
 #' is used, the function effectively produces a regular 
-#' heteroskedasticity-robust matrix.
+#' heteroskedasticity-robust matrix.  Alternatively, a \code{formula} specifying the 
+#' cluster variables to be used (see Details).
 #' @param parallel Scalar or list.  If a list, use the list as a list
 #' of connected processing cores/clusters.  A scalar indicates no
 #' parallelization.  See the \bold{parallel} package.
@@ -39,6 +40,9 @@
 #' to cluster (\code{cbind()}'ed as necessary).  The cluster variables should
 #' be of the same number of rows as the original data set; observations
 #' omitted or excluded in the model estimation will be handled accordingly.
+#'
+#' Alternatively, you can use a formula to specify which variables from the
+#' original data frame to use as cluster variables, e.g., \code{~ firmid + year}.
 #'
 #' Ma (2014) suggests using the White (1980) variance-covariance matrix
 #' as the final, subtracted matrix when the union of the clustering
@@ -97,6 +101,8 @@
 #' 
 #' @importFrom sandwich estfun meatHC sandwich
 #' @importFrom parallel clusterExport parApply
+#' @importFrom stats coef cov model.frame model.matrix expand.model.frame
+#' @importFrom utils combn
 #' 
 #' @examples
 #' library(lmtest)
@@ -111,9 +117,17 @@
 #' vcov_year <- cluster.vcov(m1, petersen$year)
 #' coeftest(m1, vcov_year)
 #' 
+#' # Cluster by year using a formula
+#' vcov_year_formula <- cluster.vcov(m1, ~ year)
+#' coeftest(m1, vcov_year_formula)
+#' 
 #' # Double cluster by firm and year
 #' vcov_both <- cluster.vcov(m1, cbind(petersen$firmid, petersen$year))
 #' coeftest(m1, vcov_both)
+#' 
+#' # Double cluster by firm and year using a formula
+#' vcov_both_formula <- cluster.vcov(m1, ~ firmid + year)
+#' coeftest(m1, vcov_both_formula)
 #' 
 #' # Replicate Mahmood Arai's double cluster by firm and year
 #' vcov_both <- cluster.vcov(m1, cbind(petersen$firmid, petersen$year), use_white = FALSE)
@@ -147,7 +161,13 @@ cluster.vcov <- function(model, cluster, parallel = FALSE, use_white = NULL,
                          df_correction = TRUE, leverage = FALSE, force_posdef = FALSE,
                          debug = FALSE) {
   
-  cluster <- as.data.frame(cluster)
+  if(inherits(cluster, "formula")) {
+    cluster_tmp <- expand.model.frame(model, cluster, na.expand = TRUE)
+    cluster <- model.frame(cluster, cluster_tmp)
+  } else {
+    cluster <- as.data.frame(cluster, stringsAsFactors = FALSE)
+  }
+  
   cluster_dims <- ncol(cluster)
   
   # total cluster combinations, 2^D - 1
@@ -176,11 +196,16 @@ cluster.vcov <- function(model, cluster, parallel = FALSE, use_white = NULL,
       cluster <- cluster[-model$na.action,]
       esttmp <- estfun(model)
     }
-    cluster <- as.data.frame(cluster)  # silly error somewhere
+    cluster <- as.data.frame(cluster, stringsAsFactors = FALSE)  # silly error somewhere
   } else {
     esttmp <- estfun(model)
   }
   if(debug) print(class(cluster))
+  
+  # Factors in our clustering variables can potentially cause problems
+  # Blunt fix is to force conversion to characters
+  i <- !sapply(cluster, is.numeric)
+  cluster[i] <- lapply(cluster[i], as.character)
   
   # Make all combinations of cluster dimensions
   if(cluster_dims > 1) {
