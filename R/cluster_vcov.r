@@ -13,24 +13,26 @@
 #' of connected processing cores/clusters.  A scalar indicates no
 #' parallelization.  See the \bold{parallel} package.
 #' @param use_white Logical or \code{NULL}.  See description below.
-#' @param df_correction Logical or \code{vector}.  \code{TRUE} computes degrees
+#' @param df_correction Logical or \code{numeric}.  \code{TRUE} computes degrees
 #' of freedom corrections, \code{FALSE} uses no corrections.  A vector of length
 #' \eqn{2^D - 1} will directly set the degrees of freedom corrections.
 #' @param leverage Integer. EXPERIMENTAL Uses Mackinnon-White HC3-style leverage
 #' adjustments.  Known to work in the non-clustering case, 
-#' e.g., it reproduces HC3 if \code{df_correction=FALSE}.  Set to 3 for HC3-style
+#' e.g., it reproduces HC3 if \code{df_correction = FALSE}.  Set to 3 for HC3-style
 #' and 2 for HC2-style leverage adjustments.
 #' @param debug Logical.  Print internal values useful for debugging to 
 #' the console.
 #' @param force_posdef Logical.  Force the eigenvalues of the variance-covariance
 #' matrix to be positive.
+#' @param stata_fe_model_rank Logical.  If \code{TRUE}, add 1 to model rank \eqn{K} 
+#' to emulate Stata's fixed effect model rank for degrees of freedom adjustments.
 #'
 #' @keywords clustering multi-way robust standard errors
 #'
 #' @details
 #' This function implements multi-way clustering using the method 
-#' suggested by Cameron, Gelbach, & Miller (2011), which involves
-#' clustering on \eqn{2^D - 1} dimensional combinations, e.g.,
+#' suggested by Cameron, Gelbach, & Miller (2011), 
+#' which involves clustering on \eqn{2^D - 1} dimensional combinations, e.g.,
 #' if we're cluster on firm and year, then we compute for firm,
 #' year, and firm-year.  Variance-covariance matrices with an odd
 #' number of cluster variables are added, and those with an even
@@ -44,9 +46,9 @@
 #' Alternatively, you can use a formula to specify which variables from the
 #' original data frame to use as cluster variables, e.g., \code{~ firmid + year}.
 #'
-#' Ma (2014) suggests using the White (1980) variance-covariance matrix
-#' as the final, subtracted matrix when the union of the clustering
-#' dimensions U results in a single observation per group in U;
+#' Ma (2014) suggests using the White (1980) 
+#' variance-covariance matrix as the final, subtracted matrix when the union 
+#' of the clustering dimensions U results in a single observation per group in U;
 #' e.g., if clustering by firm and year, there is only one observation
 #' per firm-year, we subtract the White (1980) HC0 variance-covariance
 #' from the sum of the firm and year vcov matrices.  This is detected
@@ -59,7 +61,8 @@
 #' vector to \code{df_correction} (of length \eqn{2^D - 1}) will override
 #' the default, and setting \code{df_correction = FALSE} will use no correction.
 #' 
-#' Cameron, Gelbach, & Miller (2011) futher suggest a method for forcing
+#' Cameron, Gelbach, & Miller (2011) 
+#' futher suggest a method for forcing
 #' the variance-covariance matrix to be positive semidefinite by correcting
 #' the eigenvalues of the matrix.  To use this method, set \code{force_posdef = TRUE}.
 #' Do not use this method unless absolutely necessary!  The eigen/spectral
@@ -70,38 +73,52 @@
 #' The defaults deliberately match the Stata default output for one-way and
 #' Mitchell Petersen's two-way Stata code results.  To match the
 #' SAS default output (obtained using the class & repeated subject 
-#' statements, see Arellano (1987)) simply turn off the degrees of freedom correction.
+#' statements, see Arellano, 1987) 
+#' simply turn off the degrees of freedom correction.
 #' 
 #' Parallelization is available via the \bold{parallel} package by passing
 #' the "cluster" list (usually called \code{cl}) to the parallel argument.
 #' 
-#' @return a \eqn{k} x \eqn{k} variance-covariance matrix of type 'matrix'
+#' @return a \eqn{K x K} variance-covariance matrix of type 'matrix'
 #' 
 #' @export
+#' @seealso The \code{\link[lmtest]{coeftest}} and \code{\link[lmtest]{waldtest}} functions 
+#' from \CRANpkg{lmtest} provide hypothesis testing, \CRANpkg{sandwich} provides other
+#' variance-covariance matrices such as \code{\link[sandwich]{vcovHC}} and \code{\link[sandwich]{vcovHAC}}, 
+#' and the \code{\link[lfe]{felm}} function from \CRANpkg{lfe} also implements multi-way standard
+#' error clustering.  The \code{\link{cluster.boot}} function provides clustering using the bootstrap.
+#' 
 #' @author Nathaniel Graham \email{npgraham1@@gmail.com}
 #' 
 #' @references 
-#' Arellano, M. (1987). PRACTITIONERS' CORNER: Computing Robust Standard Errors for 
-#' Within-groups Estimators. Oxford bulletin of Economics and Statistics, 49(4), 431-434.
+#' Arellano, M. (1987). PRACTITIONERS' CORNER:
+#' Computing Robust Standard Errors for Within-groups Estimators. 
+#' Oxford Bulletin of Economics and Statistics, 49(4), 431--434.
+#' \doi{10.1111/j.1468-0084.1987.mp49004006.x}
 #' 
-#' Cameron, A. C., Gelbach, J. B., & Miller, D. L. (2011). Robust inference with multiway 
-#' clustering. Journal of Business & Economic Statistics, 29(2).
+#' Cameron, A. C., Gelbach, J. B., & Miller, D. L. (2011). 
+#' Robust inference with multiway clustering. Journal of Business & Economic Statistics, 29(2).
+#' \doi{10.1198/jbes.2010.07136}
 #' 
 #' Ma, Mark (Shuai), Are We Really Doing What We Think We Are Doing? A Note on Finite-Sample 
 #' Estimates of Two-Way Cluster-Robust Standard Errors (April 9, 2014).
 #' 
-#' MacKinnon, J. G., & White, H. (1985). Some heteroskedasticity-consistent covariance matrix 
-#' estimators with improved finite sample properties. Journal of Econometrics, 29(3), 305-325.
+#' MacKinnon, J. G., & White, H. (1985). 
+#' Some heteroskedasticity-consistent covariance matrix estimators with improved finite 
+#' sample properties. Journal of Econometrics, 29(3), 305--325.
+#' \doi{10.1016/0304-4076(85)90158-7}
 #' 
-#' Petersen, M. A. (2009). Estimating standard errors in finance panel data sets: Comparing 
-#' approaches. Review of financial studies, 22(1), 435-480.
+#' Petersen, M. A. (2009). Estimating standard errors 
+#' in finance panel data sets: Comparing approaches. Review of Financial Studies, 22(1), 435--480.
+#' \doi{10.1093/rfs/hhn053}
 #' 
 #' White, H. (1980). A heteroskedasticity-consistent covariance matrix estimator and a direct 
-#' test for heteroskedasticity. Econometrica: Journal of the Econometric Society, 817-838.
+#' test for heteroskedasticity. Econometrica: Journal of the Econometric Society, 817--838.
+#' \doi{10.2307/1912934}
 #' 
 #' @importFrom sandwich estfun meatHC sandwich
 #' @importFrom parallel clusterExport parApply
-#' @importFrom stats coef cov model.frame model.matrix expand.model.frame
+#' @importFrom stats coef cov model.frame model.matrix expand.model.frame na.pass
 #' @importFrom utils combn
 #' 
 #' @examples
@@ -151,7 +168,7 @@
 #' 
 #' # Go multicore using the parallel package
 #' \dontrun{
-#' require(parallel)
+#' library(parallel)
 #' cl <- makeCluster(4)
 #' vcov_both <- cluster.vcov(m1, cbind(petersen$firmid, petersen$year), parallel = cl)
 #' stopCluster(cl)
@@ -159,11 +176,12 @@
 #' }
 cluster.vcov <- function(model, cluster, parallel = FALSE, use_white = NULL, 
                          df_correction = TRUE, leverage = FALSE, force_posdef = FALSE,
+                         stata_fe_model_rank = FALSE,
                          debug = FALSE) {
   
   if(inherits(cluster, "formula")) {
-    cluster_tmp <- expand.model.frame(model, cluster, na.expand = TRUE)
-    cluster <- model.frame(cluster, cluster_tmp)
+    cluster_tmp <- expand.model.frame(model, cluster, na.expand = FALSE)
+    cluster <- model.frame(cluster, cluster_tmp, na.action = na.pass)
   } else {
     cluster <- as.data.frame(cluster, stringsAsFactors = FALSE)
   }
@@ -218,16 +236,21 @@ cluster.vcov <- function(model, cluster, parallel = FALSE, use_white = NULL,
                    N = integer(tcc),
                    K = integer(tcc))
   
+  rank_adjustment <- 0
+  if(stata_fe_model_rank == TRUE) {
+    rank_adjustment <- 1
+  }
+  
   for(i in 1:tcc) {
     df[i, "M"] <- length(unique(cluster[,i]))
     df[i, "N"] <- length(cluster[,i])
-    df[i, "K"] <- model$rank
+    df[i, "K"] <- model$rank + rank_adjustment
   }
   
   
   if(df_correction == TRUE) {
     df$dfc <- (df$M / (df$M - 1)) * ((df$N - 1) / (df$N - df$K))
-  } else if(length(df_correction) > 1) {
+  } else if(is.numeric(df_correction) == TRUE) {
     df$dfc <- df_correction
   } else {
     df$dfc <- 1

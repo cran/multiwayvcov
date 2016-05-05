@@ -1,0 +1,5 @@
+multiwayvcov v1.2.3 (2016-05-03):
+=================================
+* Formula interface now correctly handles NA values
+* df_correction now allows corrections for one-way clustering
+* stata_fe_model_rank argument added to reproduce some Stata results

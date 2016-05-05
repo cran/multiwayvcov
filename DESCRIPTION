@@ -1,9 +1,9 @@
 Encoding: UTF-8
 Package: multiwayvcov
 Type: Package
-Title: Multi-way Standard Error Clustering
-Version: 1.2.2
-Date: 2015-09-25
+Title: Multi-Way Standard Error Clustering
+Version: 1.2.3
+Date: 2016-05-05
 Author: Nathaniel Graham and Mahmood Arai and Björn Hagströmer
 Maintainer: Nathaniel Graham <npgraham1@gmail.com>
 Depends: R (>= 3.0.0)
@@ -20,7 +20,8 @@ Description: Exports two functions implementing
     parallelization support is provided.
 License: BSD_2_clause + file LICENSE
 ByteCompile: yes
+RoxygenNote: 5.0.1
 NeedsCompilation: no
-Packaged: 2015-09-25 02:43:12 UTC; npgraham
+Packaged: 2016-05-05 09:06:58 UTC; npgraham
 Repository: CRAN
-Date/Publication: 2015-09-25 13:57:25
+Date/Publication: 2016-05-05 16:01:22

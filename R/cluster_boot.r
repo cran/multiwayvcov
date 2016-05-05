@@ -64,37 +64,58 @@
 #' you can use a formula to specify which variables from the
 #' original data frame to use as cluster variables, e.g., \code{~ firmid + year}.
 #' 
-#' Unlike the \code{cluster.vcov} function, this function does not depend upon the \code{estfun}
-#' function from the \bold{sandwich} package, although it does make use of the \code{vcovHC}
-#' function for computing White HC0 variance-covariance matrices. 
+#' Ma (2014) suggests using the White (1980) 
+#' variance-covariance matrix as the final, subtracted matrix when the union 
+#' of the clustering dimensions U results in a single observation per group in U;
+#' e.g., if clustering by firm and year, there is only one observation
+#' per firm-year, we subtract the White (1980) HC0 variance-covariance
+#' from the sum of the firm and year vcov matrices.  This is detected
+#' automatically (if \code{use_white = NULL}), but you can force this one way 
+#' or the other by setting \code{use_white = TRUE} or \code{FALSE}.
+#' 
+#' Unlike the \code{cluster.vcov} function, this function does not depend upon the 
+#' \code{\link[sandwich]{estfun}}
+#' function from the \CRANpkg{sandwich} package, although it does make use of the \code{\link[sandwich]{vcovHC}}
+#' function for computing White (1980) variance-covariance matrices. 
 #' 
 #' Parallelization (if used) is handled by the \bold{boot} package.  Be sure to set
 #' \code{options(boot.ncpus = N)} where \code{N} is the number of CPU cores you want
 #' the \code{boot} function to use.
 #' 
-#' @return a \eqn{k} x \eqn{k} variance-covariance matrix of type \code{matrix}
+#' @return a \eqn{K x K} variance-covariance matrix of type \code{matrix}
 #' 
 #' @export
+#' 
+#' @seealso \code{\link{cluster.vcov}} for clustering using asymptotics 
+#' 
 #' @author Nathaniel Graham \email{npgraham1@@gmail.com}
 #' 
 #' @references
 #' Cameron, A. C., Gelbach, J. B., & Miller, D. L. (2008). Bootstrap-based improvements 
 #' for inference with clustered errors. The Review of Economics and Statistics, 90(3), 414-427.
+#' \doi{10.1162/rest.90.3.414}
 #' 
 #' Cameron, A. C., Gelbach, J. B., & Miller, D. L. (2011). Robust inference with multiway 
 #' clustering. Journal of Business & Economic Statistics, 29(2).
+#' \doi{10.1198/jbes.2010.07136}
 #' 
 #' Mammen, E. (1993). Bootstrap and wild bootstrap for high dimensional linear models. The 
 #' Annals of Statistics, 255-285.
+#' \doi{10.1214/aos/1176349025}
 #' 
 #' Petersen, M. A. (2009). Estimating standard errors in finance panel data sets: Comparing 
-#' approaches. Review of financial studies, 22(1), 435-480.
+#' approaches. Review of Financial Studies, 22(1), 435-480.
+#' \doi{10.1093/rfs/hhn053}
+#' 
+#' White, H. (1980). A heteroskedasticity-consistent covariance matrix estimator and a direct 
+#' test for heteroskedasticity. Econometrica: Journal of the Econometric Society, 817--838.
+#' \doi{10.2307/1912934}
 #' 
 #' @importFrom sandwich vcovHC vcovHC.default
 #' @importFrom boot boot
 #' @importFrom compiler cmpfun
 #' @importFrom parallel clusterExport
-#' @importFrom stats coef cov model.frame residuals formula rnorm fitted update.formula
+#' @importFrom stats coef cov model.frame residuals formula rnorm fitted update.formula na.pass
 #' @importFrom utils combn
 #' 
 #' @examples
@@ -143,8 +164,8 @@ cluster.boot <- function(model, cluster, parallel = FALSE, use_white = NULL,
                          debug = FALSE) {
   
   if(inherits(cluster, "formula")) {
-    cluster_tmp <- expand.model.frame(model, cluster, na.expand = TRUE)
-    cluster <- model.frame(cluster, cluster_tmp)
+    cluster_tmp <- expand.model.frame(model, cluster, na.expand = FALSE)
+    cluster <- model.frame(cluster, cluster_tmp, na.action = na.pass)
   } else {
     cluster <- as.data.frame(cluster, stringsAsFactors = FALSE)
   }
